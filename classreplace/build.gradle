@@ -1,0 +1,27 @@
+apply plugin: 'groovy'
+apply plugin: 'maven'
+apply plugin: 'java'
+apply plugin: 'idea'
+
+dependencies {
+    compile gradleApi()
+    compile localGroovy()
+
+    compile 'com.android.tools.build:transform-api:1.5.0'
+    compile 'com.android.tools.build:gradle:2.3.1'
+}
+
+repositories {
+    mavenCentral()
+}
+
+group="com.dinuscxj"
+version="1.0.2"
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url : uri('./libs/repos'))
+        }
+    }
+}

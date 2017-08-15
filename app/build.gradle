@@ -1,0 +1,32 @@
+apply plugin: 'com.android.application'
+apply plugin: 'com.dinuscxj.classreplace'
+
+classreplace {
+    sourceType 'class'
+    configFiles file('src/classreplace/class-replace-config.txt')
+}
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
+    defaultConfig {
+        applicationId "com.dinuscxj.classplugin.example"
+        minSdkVersion 14
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.dinuscxj:recyclerrefreshlayout:2.0.5'
+}
