@@ -1,6 +1,6 @@
 ## ClassPlugin: Flexible Class Replacement Plugin               
 
-English | [中文版](https://github.com/dinuscxj/ClassPlugin/blob/master/README-ZH.md)<br/>
+English | [中文版](https://github.com/dinuscxj/ClassPlugin/blob/master/README-zh.md)<br/>
 
 ![](https://raw.githubusercontent.com/dinuscxj/ClassPlugin/master/logo/class_replace_logo.jpeg?width=300)<br/>
 
@@ -25,29 +25,29 @@ To use `ClassPlugin` in a `module`, add the plugin to your `buildscript`:
     }
 ```
 
-and then apply it in your `module`:
+And then apply it in your `module`:
 
 ``` gradle 
     apply plugin: 'com.dinuscxj.classreplace'
-``` gradle
+``` 
 
-last config the `classreplace` Extension
+Last config the `classreplace` Extension
 
 ``` gradle 
     classreplace {
         sourceType 'class' 
         configFiles file('src/classreplace/class-replace-config.txt')
     }
-``` gradle 
+```  
 
 ## Config Files
 The format of the config file
 ``` txt
     ${source class path}:${target class path}
-``` txt
+``` 
 
-${source class path} : The relative classpath based on the current project is used to replace $ {target class path}
-${target class path} : The jar entry name of the class which you are replaced with the ${source class path}
+**${source class path}:** The relative classpath based on the current project is used to replace $ {target class path}<br/>
+**${target class path}:** The jar entry name of the class which you are replaced with the ${source class path}
 
 # How to generate source class 
 

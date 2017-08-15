@@ -29,7 +29,7 @@
 
 ``` gradle 
     apply plugin: 'com.dinuscxj.classreplace'
-``` gradle
+``` 
 
 最后配置`classreplace` 
 
@@ -38,16 +38,16 @@
         sourceType 'class' 
         configFiles file('src/classreplace/class-replace-config.txt')
     }
-``` gradle 
+```  
 
 ## 配置文件
 配置文件的格式
 ``` txt
     ${原类路径}:${目标类路径}
-``` txt
+``` 
 
-${原类路径} : 基于当前项目的相对路径
-${目标类路径} : 在jar中的entry name（和文件路径相似）
+**${原类路径}:** 基于当前项目的相对路径 <br/>
+**${目标类路径}:** 在jar中的entry name（和文件路径相似）
 
 # 如何声称原始类
 
