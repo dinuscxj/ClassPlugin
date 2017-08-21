@@ -74,75 +74,42 @@ public class ClassReplaceTransform extends Transform {
 
             input.jarInputs.each { JarInput jarInput ->
                 def jarInputFile = jarInput.file;
-                def newJarInputFile = createTempFile(jarInputFile)
 
                 def dest = outputProvider.getContentLocation(jarInput.name, jarInput.contentTypes,
                         jarInput.scopes, Format.JAR)
 
-                try {
-                    JarFile jarFile = new JarFile(jarInputFile);
-                    classReplaceItems.each { ClassReplaceItem classReplaceItem ->
-                        JarEntry targetJarEntry = jarFile.getJarEntry(classReplaceItem.target);
-                        if (targetJarEntry != null) {
-                            printf PRINT_FORMAT, "find target class " + targetJarEntry.name + " success"
-                            JarOutputStream newJarOutputStream =
-                                    new JarOutputStream(new FileOutputStream(newJarInputFile))
+                classReplaceItems.each { ClassReplaceItem classReplaceItem ->
+                    def isTargetExistShell = "jar -tf ${jarInputFile.path} | grep ${classReplaceItem.target}";
+                    if (!execShell(isTargetExistShell, null).isEmpty()) {
+                        printf PRINT_FORMAT, "find target class " + classReplaceItem.target + " success"
 
-                            jarFile.entries().each { JarEntry jarEntry ->
-                                InputStream inputStream
-                                if (jarEntry.name == classReplaceItem.target) {
-                                    def sourceFile = findSourceFile(mProject, classReplaceItem.source)
-                                    inputStream = new FileInputStream(sourceFile)
+                        def sourceFilePath = findSourceFile(mProject, classReplaceItem.source)
+                        def targetFilePath = classReplaceItem.target
+                        def targetFileParent = new File(classReplaceItem.target).parent
 
-                                    //Mac BetterZip can't unzip, Who know why ?
-                                    //command (unzip path) can work well
-                                    def newJarEntry = new JarEntry(jarEntry.name)
-                                    newJarEntry.size = inputStream.available()
-                                    newJarEntry.method = jarEntry.DEFLATED
-                                    newJarEntry.time = 0
-                                    newJarEntry.extra = jarEntry.extra
-                                    newJarEntry.crc = FileUtils.checksumCRC32(sourceFile)
-                                    jarEntry = newJarEntry
-                                } else {
-                                    inputStream = jarFile.getInputStream(jarEntry)
-                                }
-
-                                newJarOutputStream.putNextEntry(jarEntry)
-
-                                try {
-                                    IOUtils.copy(inputStream, newJarOutputStream);
-                                } finally {
-                                    IOUtils.closeQuietly(inputStream);
-                                }
-
-                                newJarOutputStream.closeEntry()
-                            }
-                            newJarOutputStream.finish()
-                            newJarOutputStream.flush()
-                            newJarOutputStream.close()
-                            printf PRINT_FORMAT, "replace " + targetJarEntry.name + " success"
+                        // both '&&' and '｜' not work
+                        [
+                                "mkdir -p ${targetFileParent} ",
+                                "cp ${sourceFilePath} ${targetFileParent} ",
+                                "jar -uf ${jarInputFile.path} ${targetFilePath} ",
+                                "rm -rf ${targetFilePath} "
+                        ].each {
+                            execShell(it, jarInputFile.parentFile)
                         }
+
+                        printf PRINT_FORMAT, "replace " + classReplaceItem.target + " success"
                     }
 
-                    if (newJarInputFile.exists()) {
-                        FileUtils.copyFile(newJarInputFile, dest)
-                        FileUtils.deleteQuietly(newJarInputFile)
-                    } else {
-                        FileUtils.copyFile(jarInputFile, dest)
-                    }
-
-                } catch (Throwable e) {
-                    e.printStackTrace()
-                    if (newJarInputFile.exists()) {
-                        FileUtils.deleteQuietly(newJarInputFile)
-                    }
-
-                    throw e;
                 }
+                FileUtils.copyFile(jarInputFile, dest)
 
                 printf PRINT_FORMAT, "copy jar " + jarInputFile.path + " success";
             }
         }
+    }
+
+    private static String execShell(String shell, File directory) {
+        return shell.execute(null, directory).getText()
     }
 
     private static File findSourceFile(Project project, String path) {
@@ -158,14 +125,5 @@ public class ClassReplaceTransform extends Transform {
 
             throw new FileNotFoundException(path)
         }
-    }
-
-    private static File createTempFile(File file) {
-        def targetFileName = "temp_" + System.currentTimeMillis() + ".jar"
-
-        File targetFile = new File(file.getParentFile(), targetFileName);
-        targetFile.delete()
-
-        return targetFile
     }
 }
