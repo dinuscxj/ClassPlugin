@@ -1,1 +1,2 @@
 app/src/classreplace/class/RefreshLogger.class:com/dinuscxj/refresh/RefreshLogger.class
+app/src/classreplace/class/MaterialDragDistanceConverter.class:com/dinuscxj/refresh/MaterialDragDistanceConverter.class

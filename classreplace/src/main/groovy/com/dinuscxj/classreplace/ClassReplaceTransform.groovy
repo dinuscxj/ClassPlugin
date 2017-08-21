@@ -81,17 +81,19 @@ public class ClassReplaceTransform extends Transform {
 
                 try {
                     JarFile jarFile = new JarFile(jarInputFile);
-                    classReplaceItems.each { ClassReplaceItem classReplaceItem ->
+                    for (ClassReplaceItem classReplaceItem in classReplaceItems) {
                         JarEntry targetJarEntry = jarFile.getJarEntry(classReplaceItem.target);
                         if (targetJarEntry != null) {
-                            printf PRINT_FORMAT, "find target class " + targetJarEntry.name + " success"
+                            printf PRINT_FORMAT, "find target jar " + jarInputFile.path + " success"
                             JarOutputStream newJarOutputStream =
                                     new JarOutputStream(new FileOutputStream(newJarInputFile))
 
                             jarFile.entries().each { JarEntry jarEntry ->
                                 InputStream inputStream
-                                if (jarEntry.name == classReplaceItem.target) {
-                                    def sourceFile = findSourceFile(mProject, classReplaceItem.source)
+                                ClassReplaceItem targetClassReplaceItem = getClassReplaceItem(jarEntry.name, classReplaceItems)
+                                if (targetClassReplaceItem != null) {
+                                    printf PRINT_FORMAT, "start replacing " + targetClassReplaceItem.target
+                                    def sourceFile = findSourceFile(mProject, targetClassReplaceItem.source)
                                     inputStream = new FileInputStream(sourceFile)
 
                                     //Mac BetterZip can't unzip, Who know why ?
@@ -120,7 +122,8 @@ public class ClassReplaceTransform extends Transform {
                             newJarOutputStream.finish()
                             newJarOutputStream.flush()
                             newJarOutputStream.close()
-                            printf PRINT_FORMAT, "replace " + targetJarEntry.name + " success"
+
+                            break
                         }
                     }
 
@@ -158,6 +161,16 @@ public class ClassReplaceTransform extends Transform {
 
             throw new FileNotFoundException(path)
         }
+    }
+
+    private ClassReplaceItem getClassReplaceItem(String target, List<ClassReplaceItem> classReplaceItems) {
+        for (ClassReplaceItem classReplaceItem in classReplaceItems) {
+            if (target == classReplaceItem.target) {
+                return classReplaceItem
+            }
+        }
+
+        return null
     }
 
     private static File createTempFile(File file) {

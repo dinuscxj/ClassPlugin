@@ -20,7 +20,7 @@ To use `ClassPlugin` in a `module`, add the plugin to your `buildscript`:
         }
     
         dependencies {
-            classpath 'com.dinuscxj:classreplace:1.0.2'
+            classpath 'com.dinuscxj:classreplace:1.0.3'
         }
     }
 ```
