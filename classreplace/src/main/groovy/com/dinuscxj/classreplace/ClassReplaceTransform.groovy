@@ -89,8 +89,14 @@ public class ClassReplaceTransform extends Transform {
                                     new JarOutputStream(new FileOutputStream(newJarInputFile))
 
                             jarFile.entries().each { JarEntry jarEntry ->
+                                String entryName = jarEntry.getName()
+                                if (entryName.endsWith(".DSA") || entryName.endsWith(".SF")) {
+                                    //ignore
+                                    return
+                                }
                                 InputStream inputStream
                                 ClassReplaceItem targetClassReplaceItem = getClassReplaceItem(jarEntry.name, classReplaceItems)
+                                JarEntry entry = new JarEntry(entryName)
                                 if (targetClassReplaceItem != null) {
                                     printf PRINT_FORMAT, "start replacing " + targetClassReplaceItem.target
                                     def sourceFile = findSourceFile(mProject, targetClassReplaceItem.source)
@@ -98,18 +104,21 @@ public class ClassReplaceTransform extends Transform {
 
                                     //Mac BetterZip can't unzip, Who know why ?
                                     //command (unzip path) can work well
-                                    def newJarEntry = new JarEntry(jarEntry.name)
-                                    newJarEntry.size = inputStream.available()
-                                    newJarEntry.method = jarEntry.DEFLATED
-                                    newJarEntry.time = 0
-                                    newJarEntry.extra = jarEntry.extra
-                                    newJarEntry.crc = FileUtils.checksumCRC32(sourceFile)
-                                    jarEntry = newJarEntry
+                                    entry.size = inputStream.available()
+                                    entry.method = jarEntry.DEFLATED
+                                    entry.time = 0
+                                    entry.extra = jarEntry.extra
+                                    entry.crc = FileUtils.checksumCRC32(sourceFile)
                                 } else {
                                     inputStream = jarFile.getInputStream(jarEntry)
+                                    entry.size = inputStream.available()
+                                    entry.method = jarEntry.DEFLATED
+                                    entry.time = 0
+                                    entry.extra = jarEntry.extra
+                                    entry.crc = jarEntry.crc
                                 }
 
-                                newJarOutputStream.putNextEntry(jarEntry)
+                                newJarOutputStream.putNextEntry(entry)
 
                                 try {
                                     IOUtils.copy(inputStream, newJarOutputStream);
@@ -147,6 +156,7 @@ public class ClassReplaceTransform extends Transform {
             }
         }
     }
+
 
     private static File findSourceFile(Project project, String path) {
         def sourceProjectFile = project.file(path)
