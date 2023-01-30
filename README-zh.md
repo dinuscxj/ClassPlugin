@@ -20,7 +20,7 @@
         }
     
         dependencies {
-            classpath 'com.dinuscxj:classreplace:1.0.3'
+            classpath 'com.dinuscxj:classreplace:1.0.4'
         }
     }
 ```
